@@ -422,56 +422,138 @@ async function pinLoadingScreen(): Promise<void> {
   const centerX = width / 2;
   const centerY = height / 2;
   
-  // Create different loading patterns with 📍
+  // Different loading animations
   const loadingPatterns = [
-    // Rotating circle
+    // Classic spinner with dots
     async () => {
+      const spinnerChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+      const dots = ['   ', '.  ', '.. ', '...'];
+      
       for (let frame = 0; frame < 30; frame++) {
         clearScreen();
         const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
         
-        // Draw rotating pins
-        const radius = 8;
-        const pinCount = 8;
-        for (let i = 0; i < pinCount; i++) {
-          const angle = (i / pinCount) * Math.PI * 2 + frame * 0.1;
-          const x = Math.floor(centerX + Math.cos(angle) * radius);
-          const y = Math.floor(centerY + Math.sin(angle) * radius * 0.5);
-          if (x >= 0 && x < width && y >= 0 && y < height) {
+        // Center spinner
+        const spinner = spinnerChars[frame % spinnerChars.length];
+        const dot = dots[Math.floor(frame / 3) % dots.length];
+        const loadingText = `Loading${dot}`;
+        
+        // Draw spinner
+        grid[centerY][centerX - 8] = spinner;
+        
+        // Draw "Loading..."
+        for (let i = 0; i < loadingText.length; i++) {
+          grid[centerY][centerX - 6 + i] = loadingText[i];
+        }
+        
+        // Draw 📍 at the end
+        grid[centerY][centerX + 5] = '📍';
+        
+        // Progress bar below
+        const progress = (frame / 30);
+        const barWidth = 30;
+        const filledWidth = Math.floor(progress * barWidth);
+        const barY = centerY + 2;
+        const barStartX = centerX - barWidth / 2;
+        
+        grid[barY][barStartX - 1] = '[';
+        for (let i = 0; i < barWidth; i++) {
+          if (i < filledWidth) {
+            grid[barY][barStartX + i] = '█';
+          } else {
+            grid[barY][barStartX + i] = '░';
+          }
+        }
+        grid[barY][barStartX + barWidth] = ']';
+        
+        console.log(chalk.cyan(grid.map(row => row.join('')).join('\n')));
+        await sleep(60);
+      }
+    },
+    
+    // Bouncing 📍 with loading text
+    async () => {
+      const loadingTexts = ['Loading', 'Loading.', 'Loading..', 'Loading...'];
+      
+      for (let frame = 0; frame < 35; frame++) {
+        clearScreen();
+        const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
+        
+        // Bouncing pins
+        for (let i = 0; i < 5; i++) {
+          const offset = frame + i * 5;
+          const bounce = Math.abs(Math.sin(offset * 0.2)) * 3;
+          const x = centerX - 10 + i * 5;
+          const y = Math.floor(centerY - bounce);
+          
+          if (y >= 0 && y < height && x >= 0 && x < width) {
             grid[y][x] = '📍';
           }
         }
         
-        // Center pin
-        grid[Math.floor(centerY)][Math.floor(centerX)] = '📍';
+        // Loading text
+        const text = loadingTexts[Math.floor(frame / 5) % loadingTexts.length];
+        const textY = centerY + 3;
+        const textStartX = centerX - text.length / 2;
         
-        console.log(grid.map(row => row.join('')).join('\n'));
-        await sleep(50);
-      }
-    },
-    // Pulsing pins
-    async () => {
-      for (let frame = 0; frame < 20; frame++) {
-        clearScreen();
-        const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
-        
-        const pulse = Math.sin(frame * 0.3) * 0.5 + 0.5;
-        const size = Math.floor(pulse * 5) + 1;
-        
-        for (let dy = -size; dy <= size; dy++) {
-          for (let dx = -size; dx <= size; dx++) {
-            if (Math.abs(dx) + Math.abs(dy) <= size) {
-              const x = Math.floor(centerX + dx * 3);
-              const y = Math.floor(centerY + dy);
-              if (x >= 0 && x < width && y >= 0 && y < height) {
-                grid[y][x] = '📍';
-              }
-            }
+        for (let i = 0; i < text.length; i++) {
+          if (textStartX + i >= 0 && textStartX + i < width) {
+            grid[textY][textStartX + i] = text[i];
           }
         }
         
         console.log(gradient.pastel(grid.map(row => row.join('')).join('\n')));
-        await sleep(60);
+        await sleep(50);
+      }
+    },
+    
+    // Modern circular loader
+    async () => {
+      const circleChars = ['◐', '◓', '◑', '◒'];
+      const indicators = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷'];
+      
+      for (let frame = 0; frame < 40; frame++) {
+        clearScreen();
+        const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
+        
+        // Central 📍
+        grid[centerY][centerX] = '📍';
+        
+        // Rotating indicators around it
+        const radius = 5;
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2 + frame * 0.15;
+          const x = Math.floor(centerX + Math.cos(angle) * radius);
+          const y = Math.floor(centerY + Math.sin(angle) * radius * 0.5);
+          
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            const indicator = indicators[(frame + i) % indicators.length];
+            grid[y][x] = chalk.dim(indicator);
+          }
+        }
+        
+        // Status text
+        const statusTexts = ['Initializing', 'Preparing', 'Almost ready', 'Loading'];
+        const status = statusTexts[Math.floor(frame / 10) % statusTexts.length];
+        const statusY = centerY + 4;
+        const statusX = centerX - status.length / 2;
+        
+        for (let i = 0; i < status.length; i++) {
+          if (statusX + i >= 0 && statusX + i < width) {
+            grid[statusY][statusX + i] = status[i];
+          }
+        }
+        
+        // Three dots animation
+        const dotCount = (Math.floor(frame / 3) % 4);
+        for (let i = 0; i < dotCount; i++) {
+          if (statusX + status.length + i < width) {
+            grid[statusY][statusX + status.length + i] = '.';
+          }
+        }
+        
+        console.log(gradient.teen(grid.map(row => row.join('')).join('\n')));
+        await sleep(45);
       }
     }
   ];
@@ -526,11 +608,7 @@ async function main(): Promise<void> {
       seed = parseInt(args[seedIndex + 1], 10);
       if (!isNaN(seed)) {
         random = new SeededRandom(seed);
-        // Only show seed message if seed is not 0
-        if (seed !== 0) {
-          console.log(chalk.dim(`Using seed: ${seed}`));
-          await sleep(1000);
-        }
+        // No seed message - just use it silently
       }
     }
     
@@ -606,7 +684,7 @@ ${chalk.yellow('Examples:')}
     // Exponential acceleration sequence
     await acceleratingSequence([...shuffledEffects, ...animatedCards]);
     
-    // Extended burst sequence (3 seconds) with varied patterns
+    // Extended burst sequence with varied patterns and card flashes
     const burstStartTime = Date.now();
     const burstDuration = 1500; // Shortened from 3000ms
     const burstChars = ['▓', '░', '▒', '█'];
@@ -615,6 +693,15 @@ ${chalk.yellow('Examples:')}
     // Conservative width for emoji placement (leave buffer on edges)
     const safeWidth = 70; // Instead of 80
     const xOffset = 5; // Start from column 5
+    
+    // Create card instances for quick flashes
+    const cardInstances = [
+      new FloatingCard(),
+      new GlitchCard(),
+      new NeonCard(),
+      new AsciiWaveCard(),
+      new ConstellationCard()
+    ];
     
     let frameCount = 0;
     while (Date.now() - burstStartTime < burstDuration) {
@@ -664,21 +751,28 @@ ${chalk.yellow('Examples:')}
         console.log(gradient.vice(output));
         
       } else if (elapsed < 900) {
-        // Pattern 3: Matrix rain burst
-        let output = '';
-        for (let y = 0; y < 20; y++) {
-          for (let x = 0; x < 80; x++) {
-            if ((x + frameCount) % 5 === 0 && getRandom() < 0.8) {
-              output += chalk.green(burstChars[Math.floor(getRandom() * burstChars.length)]);
-            } else if (getRandom() < 0.02 && x >= xOffset && x < xOffset + safeWidth) {
-              output += chalk.dim('📍');
-            } else {
-              output += ' ';
+        // Pattern 3: Quick card flash
+        if (frameCount % 8 < 3) {
+          // Show a random card for a few frames
+          const cardIndex = Math.floor(getRandom() * cardInstances.length);
+          console.log(cardInstances[cardIndex].render(frameCount));
+        } else {
+          // Matrix rain burst
+          let output = '';
+          for (let y = 0; y < 20; y++) {
+            for (let x = 0; x < 80; x++) {
+              if ((x + frameCount) % 5 === 0 && getRandom() < 0.8) {
+                output += chalk.green(burstChars[Math.floor(getRandom() * burstChars.length)]);
+              } else if (getRandom() < 0.02 && x >= xOffset && x < xOffset + safeWidth) {
+                output += chalk.dim('📍');
+              } else {
+                output += ' ';
+              }
             }
+            output += '\n';
           }
-          output += '\n';
+          console.log(output);
         }
-        console.log(output);
         
       } else if (elapsed < 1200) {
         // Pattern 4: Spiral burst
@@ -743,33 +837,51 @@ ${chalk.yellow('Examples:')}
         console.log(gradient.cristal(output));
         
       } else if (elapsed < 2100) {
-        // Pattern 7: Particle explosion
-        let output = '';
-        const particles = 20;
-        const grid: string[][] = Array(20).fill(null).map(() => Array(80).fill(' '));
-        
-        for (let i = 0; i < particles; i++) {
-          const angle = (i / particles) * Math.PI * 2;
-          const speed = (frameCount % 30) * 0.5;
-          const x = Math.floor(40 + Math.cos(angle) * speed);
-          const y = Math.floor(10 + Math.sin(angle) * speed * 0.5);
+        // Pattern 7: Card + particle mix
+        if (frameCount % 10 < 4) {
+          // Quick card render
+          const cardIndex = Math.floor(getRandom() * cardInstances.length);
+          const cardOutput = cardInstances[cardIndex].render(frameCount);
+          // Add some noise over the card
+          const lines = cardOutput.split('\n');
+          const noisyOutput = lines.map((line, y) => {
+            return line.split('').map((char, x) => {
+              if (getRandom() < 0.1) {
+                return chalk.dim(burstChars[Math.floor(getRandom() * 4)]);
+              }
+              return char;
+            }).join('');
+          }).join('\n');
+          console.log(noisyOutput);
+        } else {
+          // Particle explosion
+          let output = '';
+          const particles = 20;
+          const grid: string[][] = Array(20).fill(null).map(() => Array(80).fill(' '));
           
-          if (x >= xOffset && x < xOffset + safeWidth && y >= 0 && y < 20) {
-            grid[y][x] = i % 3 === 0 ? '📍' : burstChars[Math.floor(getRandom() * 4)];
-          }
-        }
-        
-        // Add some random background
-        for (let y = 0; y < 20; y++) {
-          for (let x = 0; x < 80; x++) {
-            if (grid[y][x] === ' ' && getRandom() < 0.05) {
-              grid[y][x] = chalk.dim(burstChars[Math.floor(getRandom() * 4)]);
+          for (let i = 0; i < particles; i++) {
+            const angle = (i / particles) * Math.PI * 2;
+            const speed = (frameCount % 30) * 0.5;
+            const x = Math.floor(40 + Math.cos(angle) * speed);
+            const y = Math.floor(10 + Math.sin(angle) * speed * 0.5);
+            
+            if (x >= xOffset && x < xOffset + safeWidth && y >= 0 && y < 20) {
+              grid[y][x] = i % 3 === 0 ? '📍' : burstChars[Math.floor(getRandom() * 4)];
             }
           }
+          
+          // Add some random background
+          for (let y = 0; y < 20; y++) {
+            for (let x = 0; x < 80; x++) {
+              if (grid[y][x] === ' ' && getRandom() < 0.05) {
+                grid[y][x] = chalk.dim(burstChars[Math.floor(getRandom() * 4)]);
+              }
+            }
+          }
+          
+          output = grid.map(row => row.join('')).join('\n');
+          console.log(gradient.atlas(output));
         }
-        
-        output = grid.map(row => row.join('')).join('\n');
-        console.log(gradient.atlas(output));
         
       } else if (elapsed < 2400) {
         // Pattern 8: Zigzag lightning
