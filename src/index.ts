@@ -21,6 +21,11 @@ import { ConstellationCard } from './cards/constellationCard';
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
+// Clear screen with ANSI escape codes
+function clearScreen(): void {
+  process.stdout.write('\x1b[2J\x1b[H');
+}
+
 // Visual effects with shorter durations
 async function showConway(): Promise<void> {
   const game = new ConwayGameOfLife(80, 20);
@@ -28,7 +33,7 @@ async function showConway(): Promise<void> {
   game.loadPattern(patterns[Math.floor(Math.random() * patterns.length)]);
   
   for (let i = 0; i < 25; i++) {
-    console.clear();
+    clearScreen();
     console.log(gradient.vice(game.render()));
     game.step();
     await sleep(40);
@@ -39,7 +44,7 @@ async function showParticles(): Promise<void> {
   const particles = new ParticleSystem(80, 20, 50);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     const frame = particles.render();
     console.log(gradient.rainbow(frame));
     particles.update();
@@ -51,7 +56,7 @@ async function showMatrixRain(): Promise<void> {
   const matrix = new MatrixRain(80, 20);
   
   for (let i = 0; i < 35; i++) {
-    console.clear();
+    clearScreen();
     console.log(matrix.render());
     matrix.update();
     await sleep(25);
@@ -62,7 +67,7 @@ async function showWave(): Promise<void> {
   const wave = new WaveAnimation(80, 20);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(gradient.cristal(wave.render(i)));
     await sleep(30);
   }
@@ -74,7 +79,7 @@ async function showGlitch(): Promise<void> {
   const height = 20;
   
   for (let frame = 0; frame < 25; frame++) {
-    console.clear();
+    clearScreen();
     let art = '';
     
     for (let y = 0; y < height; y++) {
@@ -98,7 +103,7 @@ async function showSpiral(): Promise<void> {
   const spiral = new SpiralPattern(80, 20);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(gradient.pastel(spiral.render(i)));
     await sleep(35);
   }
@@ -108,7 +113,7 @@ async function showDNA(): Promise<void> {
   const dna = new DNAHelix(80, 20);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(gradient.vice(dna.render(i)));
     await sleep(35);
   }
@@ -118,7 +123,7 @@ async function showCircuit(): Promise<void> {
   const circuit = new CircuitBoard(80, 20);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(gradient.atlas(circuit.render(i)));
     await sleep(35);
   }
@@ -128,7 +133,7 @@ async function showKaleidoscope(): Promise<void> {
   const kaleidoscope = new Kaleidoscope(80, 20);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(gradient.rainbow(kaleidoscope.render(i)));
     await sleep(35);
   }
@@ -138,7 +143,7 @@ async function showFireflies(): Promise<void> {
   const fireflies = new Fireflies(80, 20);
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(fireflies.render(i));
     await sleep(35);
   }
@@ -149,7 +154,7 @@ async function showFloatingCard(): Promise<void> {
   const card = new FloatingCard();
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(card.render(i));
     await sleep(35);
   }
@@ -159,7 +164,7 @@ async function showGlitchCard(): Promise<void> {
   const card = new GlitchCard();
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(card.render(i));
     await sleep(35);
   }
@@ -169,7 +174,7 @@ async function showNeonCard(): Promise<void> {
   const card = new NeonCard();
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(card.render(i));
     await sleep(35);
   }
@@ -179,7 +184,7 @@ async function showWaveCard(): Promise<void> {
   const card = new AsciiWaveCard();
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(card.render(i));
     await sleep(35);
   }
@@ -189,7 +194,7 @@ async function showConstellationCard(): Promise<void> {
   const card = new ConstellationCard();
   
   for (let i = 0; i < 30; i++) {
-    console.clear();
+    clearScreen();
     console.log(card.render(i));
     await sleep(35);
   }
@@ -197,11 +202,11 @@ async function showConstellationCard(): Promise<void> {
 
 // Static business card (final)
 async function showStaticBusinessCard(): Promise<void> {
-  console.clear();
+  clearScreen();
   
   const signature = figlet.textSync('spinute', {
-    font: 'Small',
-    horizontalLayout: 'fitted'
+    font: 'Standard',
+    horizontalLayout: 'default'
   });
   
   const card = `
@@ -252,7 +257,7 @@ async function smoothTransition(): Promise<void> {
   const height = 20;
   
   for (let i = 0; i < 5; i++) {
-    console.clear();
+    clearScreen();
     let output = '';
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < 80; x++) {
@@ -281,7 +286,7 @@ async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
     return async (frameCount: number) => {
       const obj = setup();
       for (let i = 0; i < frameCount; i++) {
-        console.clear();
+        clearScreen();
         console.log(render(obj, i));
         if (update) update(obj);
         await sleep(20); // Fixed frame time for smooth motion
@@ -363,7 +368,7 @@ async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
   // Final burst of super fast animations
   const burstChars = ['▓', '░', '▒', '█', '📍', '💻', '🍣', '🍺', '🌐', '🎲', '🃏', '🌵', '🦌', '💄'];
   for (let i = 0; i < 20; i++) {
-    console.clear();
+    clearScreen();
     let output = '';
     for (let y = 0; y < 20; y++) {
       for (let x = 0; x < 80; x++) {
@@ -378,13 +383,13 @@ async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
 
 // Black screen pause
 async function blackScreen(): Promise<void> {
-  console.clear();
+  clearScreen();
   await sleep(800); // Dramatic pause
 }
 
 // Pin loading screen
 async function pinLoadingScreen(): Promise<void> {
-  console.clear();
+  clearScreen();
   const width = 80;
   const height = 20;
   const centerX = width / 2;
@@ -395,7 +400,7 @@ async function pinLoadingScreen(): Promise<void> {
     // Rotating circle
     async () => {
       for (let frame = 0; frame < 30; frame++) {
-        console.clear();
+        clearScreen();
         const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
         
         // Draw rotating pins
@@ -420,7 +425,7 @@ async function pinLoadingScreen(): Promise<void> {
     // Pulsing pins
     async () => {
       for (let frame = 0; frame < 20; frame++) {
-        console.clear();
+        clearScreen();
         const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
         
         const pulse = Math.sin(frame * 0.3) * 0.5 + 0.5;
@@ -452,20 +457,19 @@ async function pinLoadingScreen(): Promise<void> {
 async function showTimedAnimation(animationFunc: Function, durationMs: number): Promise<void> {
   const startTime = Date.now();
   
-  // Create a promise that resolves after the duration
-  const timeoutPromise = new Promise<void>(resolve => {
-    setTimeout(resolve, durationMs);
-  });
-  
-  // Run the animation until timeout
-  const animationPromise = (async () => {
-    while (Date.now() - startTime < durationMs) {
-      await animationFunc();
-    }
-  })();
-  
-  // Wait for timeout
-  await Promise.race([animationPromise, timeoutPromise]);
+  // Run the animation for the specified duration
+  while (Date.now() - startTime < durationMs) {
+    // Check remaining time before starting animation
+    const remainingTime = durationMs - (Date.now() - startTime);
+    if (remainingTime <= 0) break;
+    
+    // Start the animation
+    const animStart = Date.now();
+    await animationFunc();
+    
+    // If animation took longer than duration, break
+    if (Date.now() - startTime >= durationMs) break;
+  }
 }
 
 // Show card for specific duration
@@ -537,7 +541,7 @@ async function main(): Promise<void> {
     
     let frameCount = 0;
     while (Date.now() - burstStartTime < burstDuration) {
-      console.clear();
+      clearScreen();
       const elapsed = Date.now() - burstStartTime;
       const progress = elapsed / burstDuration;
       
