@@ -536,8 +536,12 @@ async function main(): Promise<void> {
     // Extended burst sequence (3 seconds) with varied patterns
     const burstStartTime = Date.now();
     const burstDuration = 3000;
-    const burstChars = ['▓', '░', '▒', '█', '📍', '💻', '🍣', '🍺', '🌐', '🎲', '🃏', '🌵', '🦌', '💄'];
+    const burstChars = ['▓', '░', '▒', '█'];
     const emojis = ['📍', '💻', '🍣', '🍺', '🍅', '😴', '📕', '🦌', '💄', '📌', '🚶‍♀️', '🍕', '🍆', '🌐', '🌵', '🥝', '🛀', '🎲', '🃏'];
+    
+    // Conservative width for emoji placement (leave buffer on edges)
+    const safeWidth = 70; // Instead of 80
+    const xOffset = 5; // Start from column 5
     
     let frameCount = 0;
     while (Date.now() - burstStartTime < burstDuration) {
@@ -556,8 +560,8 @@ async function main(): Promise<void> {
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
             const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
-            if (Math.abs(dist - radius) < 2) {
-              output += emojis[Math.floor(Math.random() * emojis.length)];
+            if (Math.abs(dist - radius) < 2 && x >= xOffset && x < xOffset + safeWidth) {
+              output += Math.random() < 0.3 ? '📍' : burstChars[Math.floor(Math.random() * 4)];
             } else if (Math.random() < 0.05) {
               output += burstChars[Math.floor(Math.random() * 4)];
             } else {
@@ -574,10 +578,10 @@ async function main(): Promise<void> {
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
             const wave = Math.sin((x + frameCount * 3) * 0.2) * 5 + 10;
-            if (Math.abs(y - wave) < 2) {
+            if (Math.abs(y - wave) < 2 && x >= xOffset && x < xOffset + safeWidth) {
               output += '📍';
-            } else if (Math.random() < 0.1) {
-              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else if (Math.random() < 0.05) {
+              output += burstChars[Math.floor(Math.random() * 4)];
             } else {
               output += ' ';
             }
@@ -593,8 +597,8 @@ async function main(): Promise<void> {
           for (let x = 0; x < 80; x++) {
             if ((x + frameCount) % 5 === 0 && Math.random() < 0.8) {
               output += chalk.green(burstChars[Math.floor(Math.random() * burstChars.length)]);
-            } else if (Math.random() < 0.1) {
-              output += chalk.dim(emojis[Math.floor(Math.random() * emojis.length)]);
+            } else if (Math.random() < 0.02 && x >= xOffset && x < xOffset + safeWidth) {
+              output += chalk.dim('📍');
             } else {
               output += ' ';
             }
@@ -613,10 +617,10 @@ async function main(): Promise<void> {
             const cy = y - 10;
             const r = Math.sqrt(cx * cx + cy * cy);
             const a = Math.atan2(cy, cx);
-            if (Math.abs((a + angle) % (Math.PI / 3) - r * 0.1) < 0.3) {
+            if (Math.abs((a + angle) % (Math.PI / 3) - r * 0.1) < 0.3 && x >= xOffset && x < xOffset + safeWidth) {
               output += '📍';
             } else if (Math.random() < 0.05) {
-              output += emojis[Math.floor(Math.random() * emojis.length)];
+              output += burstChars[Math.floor(Math.random() * 4)];
             } else {
               output += ' ';
             }
@@ -632,8 +636,8 @@ async function main(): Promise<void> {
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
             const diamond = Math.abs(x - 40) + Math.abs(y - offset);
-            if (diamond < 10 && diamond > 7) {
-              output += emojis[Math.floor(Math.random() * emojis.length)];
+            if (diamond < 10 && diamond > 7 && x >= xOffset && x < xOffset + safeWidth) {
+              output += Math.random() < 0.5 ? '📍' : burstChars[Math.floor(Math.random() * 4)];
             } else if (Math.random() < 0.1) {
               output += burstChars[Math.floor(Math.random() * 4)];
             } else {
@@ -650,9 +654,13 @@ async function main(): Promise<void> {
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
             if (((x + y + frameCount) % 4 === 0) && Math.random() < 0.8) {
-              output += emojis[Math.floor(Math.random() * emojis.length)];
+              if (x >= xOffset && x < xOffset + safeWidth && Math.random() < 0.3) {
+                output += '📍';
+              } else {
+                output += burstChars[Math.floor(Math.random() * 4)];
+              }
             } else if (Math.random() < 0.2) {
-              output += burstChars[Math.floor(Math.random() * burstChars.length)];
+              output += burstChars[Math.floor(Math.random() * 4)];
             } else {
               output += ' ';
             }
@@ -673,8 +681,8 @@ async function main(): Promise<void> {
           const x = Math.floor(40 + Math.cos(angle) * speed);
           const y = Math.floor(10 + Math.sin(angle) * speed * 0.5);
           
-          if (x >= 0 && x < 80 && y >= 0 && y < 20) {
-            grid[y][x] = emojis[i % emojis.length];
+          if (x >= xOffset && x < xOffset + safeWidth && y >= 0 && y < 20) {
+            grid[y][x] = i % 3 === 0 ? '📍' : burstChars[Math.floor(Math.random() * 4)];
           }
         }
         
@@ -697,12 +705,12 @@ async function main(): Promise<void> {
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
             const lightning = (y % 4 === 0) ? zigzag + (y * 2) : 80 - zigzag - (y * 2);
-            if (Math.abs(x - lightning) < 2) {
+            if (Math.abs(x - lightning) < 2 && x >= xOffset && x < xOffset + safeWidth) {
               output += '⚡';
             } else if (Math.abs(x - lightning) < 5 && Math.random() < 0.3) {
-              output += emojis[Math.floor(Math.random() * emojis.length)];
+              output += burstChars[Math.floor(Math.random() * 4)];
             } else if (Math.random() < 0.02) {
-              output += burstChars[Math.floor(Math.random() * burstChars.length)];
+              output += burstChars[Math.floor(Math.random() * 4)];
             } else {
               output += ' ';
             }
@@ -718,8 +726,11 @@ async function main(): Promise<void> {
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
             if (Math.random() < density) {
-              const charSet = Math.random() < 0.6 ? emojis : burstChars;
-              output += charSet[Math.floor(Math.random() * charSet.length)];
+              if (x >= xOffset && x < xOffset + safeWidth && Math.random() < 0.2) {
+                output += '📍';
+              } else {
+                output += burstChars[Math.floor(Math.random() * burstChars.length)];
+              }
             } else {
               output += ' ';
             }
