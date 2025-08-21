@@ -20,6 +20,17 @@ npx spinute
 
 No installation required!
 
+### Options
+
+```bash
+# Use a specific seed for reproducible animations
+npx spinute --seed 42
+npx spinute -s 12345
+
+# Show help
+npx spinute --help
+```
+
 ## 🎯 What You'll See
 
 1. **Visual Effects** (randomly selected):

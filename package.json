@@ -1,6 +1,6 @@
 {
   "name": "spinute",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "📍 A creative CLI self-introduction with beautiful animations and visual effects",
   "main": "dist/index.js",
   "bin": {

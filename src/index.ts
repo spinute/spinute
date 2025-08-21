@@ -26,11 +26,38 @@ function clearScreen(): void {
   process.stdout.write('\x1b[2J\x1b[H');
 }
 
+// Simple seedable PRNG (Linear Congruential Generator)
+class SeededRandom {
+  private seed: number;
+  
+  constructor(seed: number) {
+    this.seed = seed;
+  }
+  
+  next(): number {
+    // LCG parameters from Numerical Recipes
+    this.seed = (this.seed * 1664525 + 1013904223) % 2147483647;
+    return this.seed / 2147483647;
+  }
+  
+  reset(seed: number): void {
+    this.seed = seed;
+  }
+}
+
+// Global random instance
+let random: SeededRandom;
+
+// Wrapper for getRandom() that uses seed if available
+function getRandom(): number {
+  return random ? random.next() : getRandom();
+}
+
 // Visual effects with shorter durations
 async function showConway(): Promise<void> {
   const game = new ConwayGameOfLife(80, 20);
   const patterns = ['pulsar', 'gospergun', 'random'];
-  game.loadPattern(patterns[Math.floor(Math.random() * patterns.length)]);
+  game.loadPattern(patterns[Math.floor(getRandom() * patterns.length)]);
   
   for (let i = 0; i < 25; i++) {
     clearScreen();
@@ -87,7 +114,7 @@ async function showGlitch(): Promise<void> {
         const t = frame * 0.1;
         const noise = Math.sin(x * 0.1 + t) * Math.cos(y * 0.1 + t) + 
                       Math.sin((x + y) * 0.05 + t * 2);
-        const glitch = Math.random() < 0.02 ? Math.random() * chars.length : 0;
+        const glitch = getRandom() < 0.02 ? getRandom() * chars.length : 0;
         const index = Math.floor(Math.abs(noise + glitch) * chars.length) % chars.length;
         art += gradient.teen(chars[index]);
       }
@@ -261,10 +288,10 @@ async function smoothTransition(): Promise<void> {
     let output = '';
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < 80; x++) {
-        if (Math.random() < 0.02) {
-          output += emojis[Math.floor(Math.random() * emojis.length)];
+        if (getRandom() < 0.02) {
+          output += emojis[Math.floor(getRandom() * emojis.length)];
         } else {
-          const charIndex = Math.floor(Math.random() * transitionChars.length);
+          const charIndex = Math.floor(getRandom() * transitionChars.length);
           output += chalk.dim(transitionChars[charIndex]);
         }
       }
@@ -359,7 +386,7 @@ async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
   // Run animations with increasing speed
   let iterations = 0;
   while (frameCount > minFrames && iterations < 20) {
-    const randomSnippet = animationSnippets[Math.floor(Math.random() * animationSnippets.length)];
+    const randomSnippet = animationSnippets[Math.floor(getRandom() * animationSnippets.length)];
     await randomSnippet(Math.floor(frameCount));
     frameCount *= acceleration;
     iterations++;
@@ -372,7 +399,7 @@ async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
     let output = '';
     for (let y = 0; y < 20; y++) {
       for (let x = 0; x < 80; x++) {
-        output += burstChars[Math.floor(Math.random() * burstChars.length)];
+        output += burstChars[Math.floor(getRandom() * burstChars.length)];
       }
       output += '\n';
     }
@@ -449,7 +476,7 @@ async function pinLoadingScreen(): Promise<void> {
     }
   ];
   
-  const pattern = loadingPatterns[Math.floor(Math.random() * loadingPatterns.length)];
+  const pattern = loadingPatterns[Math.floor(getRandom() * loadingPatterns.length)];
   await pattern();
 }
 
@@ -489,6 +516,40 @@ async function showTimedCard(cardFunc: Function, durationMs: number): Promise<vo
 
 async function main(): Promise<void> {
   try {
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    let seed: number | undefined;
+    
+    // Check for --seed parameter
+    const seedIndex = args.findIndex(arg => arg === '--seed' || arg === '-s');
+    if (seedIndex !== -1 && args[seedIndex + 1]) {
+      seed = parseInt(args[seedIndex + 1], 10);
+      if (!isNaN(seed)) {
+        random = new SeededRandom(seed);
+        console.log(chalk.dim(`Using seed: ${seed}`));
+        await sleep(1000);
+      }
+    }
+    
+    // Check for --help
+    if (args.includes('--help') || args.includes('-h')) {
+      console.log(`
+${chalk.cyan('spinute')} - Creative CLI self-introduction
+
+${chalk.yellow('Usage:')}
+  npx spinute [options]
+
+${chalk.yellow('Options:')}
+  --seed, -s <number>  Use a specific seed for reproducible animations
+  --help, -h           Show this help message
+
+${chalk.yellow('Examples:')}
+  npx spinute
+  npx spinute --seed 42
+  npx spinute -s 12345
+`);
+      process.exit(0);
+    }
     const visualEffects = [
       showConway,
       showParticles,
@@ -510,9 +571,18 @@ async function main(): Promise<void> {
       showConstellationCard
     ];
     
-    // Shuffle arrays
-    const shuffledEffects = [...visualEffects].sort(() => Math.random() - 0.5);
-    const shuffledCards = [...animatedCards].sort(() => Math.random() - 0.5);
+    // Shuffle arrays using Fisher-Yates for better randomness with seed
+    const shuffledEffects = [...visualEffects];
+    for (let i = shuffledEffects.length - 1; i > 0; i--) {
+      const j = Math.floor(getRandom() * (i + 1));
+      [shuffledEffects[i], shuffledEffects[j]] = [shuffledEffects[j], shuffledEffects[i]];
+    }
+    
+    const shuffledCards = [...animatedCards];
+    for (let i = shuffledCards.length - 1; i > 0; i--) {
+      const j = Math.floor(getRandom() * (i + 1));
+      [shuffledCards[i], shuffledCards[j]] = [shuffledCards[j], shuffledCards[i]];
+    }
     
     // 2s, 1s, 2s, 1s, 2s pattern
     // Animation 1 - 2 seconds
@@ -561,9 +631,9 @@ async function main(): Promise<void> {
           for (let x = 0; x < 80; x++) {
             const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
             if (Math.abs(dist - radius) < 2 && x >= xOffset && x < xOffset + safeWidth) {
-              output += Math.random() < 0.3 ? '📍' : burstChars[Math.floor(Math.random() * 4)];
-            } else if (Math.random() < 0.05) {
-              output += burstChars[Math.floor(Math.random() * 4)];
+              output += getRandom() < 0.3 ? '📍' : burstChars[Math.floor(getRandom() * 4)];
+            } else if (getRandom() < 0.05) {
+              output += burstChars[Math.floor(getRandom() * 4)];
             } else {
               output += ' ';
             }
@@ -580,8 +650,8 @@ async function main(): Promise<void> {
             const wave = Math.sin((x + frameCount * 3) * 0.2) * 5 + 10;
             if (Math.abs(y - wave) < 2 && x >= xOffset && x < xOffset + safeWidth) {
               output += '📍';
-            } else if (Math.random() < 0.05) {
-              output += burstChars[Math.floor(Math.random() * 4)];
+            } else if (getRandom() < 0.05) {
+              output += burstChars[Math.floor(getRandom() * 4)];
             } else {
               output += ' ';
             }
@@ -595,9 +665,9 @@ async function main(): Promise<void> {
         let output = '';
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
-            if ((x + frameCount) % 5 === 0 && Math.random() < 0.8) {
-              output += chalk.green(burstChars[Math.floor(Math.random() * burstChars.length)]);
-            } else if (Math.random() < 0.02 && x >= xOffset && x < xOffset + safeWidth) {
+            if ((x + frameCount) % 5 === 0 && getRandom() < 0.8) {
+              output += chalk.green(burstChars[Math.floor(getRandom() * burstChars.length)]);
+            } else if (getRandom() < 0.02 && x >= xOffset && x < xOffset + safeWidth) {
               output += chalk.dim('📍');
             } else {
               output += ' ';
@@ -619,8 +689,8 @@ async function main(): Promise<void> {
             const a = Math.atan2(cy, cx);
             if (Math.abs((a + angle) % (Math.PI / 3) - r * 0.1) < 0.3 && x >= xOffset && x < xOffset + safeWidth) {
               output += '📍';
-            } else if (Math.random() < 0.05) {
-              output += burstChars[Math.floor(Math.random() * 4)];
+            } else if (getRandom() < 0.05) {
+              output += burstChars[Math.floor(getRandom() * 4)];
             } else {
               output += ' ';
             }
@@ -637,9 +707,9 @@ async function main(): Promise<void> {
           for (let x = 0; x < 80; x++) {
             const diamond = Math.abs(x - 40) + Math.abs(y - offset);
             if (diamond < 10 && diamond > 7 && x >= xOffset && x < xOffset + safeWidth) {
-              output += Math.random() < 0.5 ? '📍' : burstChars[Math.floor(Math.random() * 4)];
-            } else if (Math.random() < 0.1) {
-              output += burstChars[Math.floor(Math.random() * 4)];
+              output += getRandom() < 0.5 ? '📍' : burstChars[Math.floor(getRandom() * 4)];
+            } else if (getRandom() < 0.1) {
+              output += burstChars[Math.floor(getRandom() * 4)];
             } else {
               output += ' ';
             }
@@ -653,14 +723,14 @@ async function main(): Promise<void> {
         let output = '';
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
-            if (((x + y + frameCount) % 4 === 0) && Math.random() < 0.8) {
-              if (x >= xOffset && x < xOffset + safeWidth && Math.random() < 0.3) {
+            if (((x + y + frameCount) % 4 === 0) && getRandom() < 0.8) {
+              if (x >= xOffset && x < xOffset + safeWidth && getRandom() < 0.3) {
                 output += '📍';
               } else {
-                output += burstChars[Math.floor(Math.random() * 4)];
+                output += burstChars[Math.floor(getRandom() * 4)];
               }
-            } else if (Math.random() < 0.2) {
-              output += burstChars[Math.floor(Math.random() * 4)];
+            } else if (getRandom() < 0.2) {
+              output += burstChars[Math.floor(getRandom() * 4)];
             } else {
               output += ' ';
             }
@@ -682,15 +752,15 @@ async function main(): Promise<void> {
           const y = Math.floor(10 + Math.sin(angle) * speed * 0.5);
           
           if (x >= xOffset && x < xOffset + safeWidth && y >= 0 && y < 20) {
-            grid[y][x] = i % 3 === 0 ? '📍' : burstChars[Math.floor(Math.random() * 4)];
+            grid[y][x] = i % 3 === 0 ? '📍' : burstChars[Math.floor(getRandom() * 4)];
           }
         }
         
         // Add some random background
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
-            if (grid[y][x] === ' ' && Math.random() < 0.05) {
-              grid[y][x] = chalk.dim(burstChars[Math.floor(Math.random() * 4)]);
+            if (grid[y][x] === ' ' && getRandom() < 0.05) {
+              grid[y][x] = chalk.dim(burstChars[Math.floor(getRandom() * 4)]);
             }
           }
         }
@@ -707,10 +777,10 @@ async function main(): Promise<void> {
             const lightning = (y % 4 === 0) ? zigzag + (y * 2) : 80 - zigzag - (y * 2);
             if (Math.abs(x - lightning) < 2 && x >= xOffset && x < xOffset + safeWidth) {
               output += '⚡';
-            } else if (Math.abs(x - lightning) < 5 && Math.random() < 0.3) {
-              output += burstChars[Math.floor(Math.random() * 4)];
-            } else if (Math.random() < 0.02) {
-              output += burstChars[Math.floor(Math.random() * 4)];
+            } else if (Math.abs(x - lightning) < 5 && getRandom() < 0.3) {
+              output += burstChars[Math.floor(getRandom() * 4)];
+            } else if (getRandom() < 0.02) {
+              output += burstChars[Math.floor(getRandom() * 4)];
             } else {
               output += ' ';
             }
@@ -725,11 +795,11 @@ async function main(): Promise<void> {
         const density = 0.3 + (progress * 0.5);
         for (let y = 0; y < 20; y++) {
           for (let x = 0; x < 80; x++) {
-            if (Math.random() < density) {
-              if (x >= xOffset && x < xOffset + safeWidth && Math.random() < 0.2) {
+            if (getRandom() < density) {
+              if (x >= xOffset && x < xOffset + safeWidth && getRandom() < 0.2) {
                 output += '📍';
               } else {
-                output += burstChars[Math.floor(Math.random() * burstChars.length)];
+                output += burstChars[Math.floor(getRandom() * burstChars.length)];
               }
             } else {
               output += ' ';
