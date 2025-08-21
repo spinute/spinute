@@ -270,6 +270,99 @@ async function smoothTransition(): Promise<void> {
   }
 }
 
+// Accelerating sequence with exponential speedup
+async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
+  // Create snippets of each animation
+  const animationSnippets = [
+    // Conway snippets
+    async () => {
+      const game = new ConwayGameOfLife(80, 20);
+      game.randomize(0.3);
+      console.clear();
+      console.log(gradient.vice(game.render()));
+    },
+    // Particle snippets
+    async () => {
+      const particles = new ParticleSystem(80, 20, 50);
+      console.clear();
+      console.log(gradient.rainbow(particles.render()));
+    },
+    // Matrix snippets
+    async () => {
+      const matrix = new MatrixRain(80, 20);
+      console.clear();
+      console.log(matrix.render());
+    },
+    // Wave snippets
+    async () => {
+      const wave = new WaveAnimation(80, 20);
+      console.clear();
+      console.log(gradient.cristal(wave.render(Math.random() * 50)));
+    },
+    // Spiral snippets
+    async () => {
+      const spiral = new SpiralPattern(80, 20);
+      console.clear();
+      console.log(gradient.pastel(spiral.render(Math.random() * 30)));
+    },
+    // DNA snippets
+    async () => {
+      const dna = new DNAHelix(80, 20);
+      console.clear();
+      console.log(gradient.vice(dna.render(Math.random() * 30)));
+    },
+    // Glitch snippets
+    async () => {
+      console.clear();
+      const chars = '▓░▒█▀▄■□▪▫╱╲╳✕✖✗⬢⬡◆◇◈⬟⬠';
+      let art = '';
+      for (let y = 0; y < 20; y++) {
+        for (let x = 0; x < 80; x++) {
+          art += gradient.teen(chars[Math.floor(Math.random() * chars.length)]);
+        }
+        art += '\n';
+      }
+      console.log(art);
+    }
+  ];
+  
+  // Start with 500ms per animation and exponentially decrease
+  let duration = 500;
+  const minDuration = 10;
+  const acceleration = 0.82; // Each animation is 18% faster
+  
+  // Run animations with increasing speed
+  let iterations = 0;
+  while (duration > minDuration && iterations < 25) {
+    const randomSnippet = animationSnippets[Math.floor(Math.random() * animationSnippets.length)];
+    await randomSnippet();
+    await sleep(duration);
+    duration *= acceleration;
+    iterations++;
+  }
+  
+  // Final burst of super fast animations
+  const burstChars = ['▓', '░', '▒', '█', '📍', '💻', '🍣', '🍺', '🌐', '🎲', '🃏', '🌵', '🦌', '💄'];
+  for (let i = 0; i < 20; i++) {
+    console.clear();
+    let output = '';
+    for (let y = 0; y < 20; y++) {
+      for (let x = 0; x < 80; x++) {
+        output += burstChars[Math.floor(Math.random() * burstChars.length)];
+      }
+      output += '\n';
+    }
+    console.log(i % 2 === 0 ? gradient.rainbow(output) : gradient.vice(output));
+    await sleep(Math.max(5, 40 - i * 2)); // Gets even faster
+  }
+}
+
+// Black screen pause
+async function blackScreen(): Promise<void> {
+  console.clear();
+  await sleep(800); // Dramatic pause
+}
+
 async function main(): Promise<void> {
   try {
     const visualEffects = [
@@ -309,6 +402,12 @@ async function main(): Promise<void> {
         await smoothTransition();
       }
     }
+    
+    // Exponential acceleration sequence
+    await acceleratingSequence([...shuffledEffects, ...animatedCards]);
+    
+    // Black screen pause
+    await blackScreen();
     
     // Final static business card
     await showStaticBusinessCard();
