@@ -232,7 +232,7 @@ ${chalk.dim('💻 🍣 🍺 🌐 🎲 🃏')}
       vertical: '│'
     },
     borderColor: 'cyan',
-    float: 'center'
+    float: 'left'
   });
   
   // Typewriter effect
