@@ -48,9 +48,9 @@ class SeededRandom {
 // Global random instance
 let random: SeededRandom;
 
-// Wrapper for getRandom() that uses seed if available
+// Wrapper for Math.random() that uses seed if available
 function getRandom(): number {
-  return random ? random.next() : getRandom();
+  return random ? random.next() : Math.random();
 }
 
 // Visual effects with shorter durations
