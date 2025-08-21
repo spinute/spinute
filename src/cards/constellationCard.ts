@@ -22,24 +22,24 @@ export class ConstellationCard {
     // Create constellation pattern for "SPINUTE" - centered on 80x20 grid
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-    const baseX = centerX - 22; // Center the pattern horizontally
+    const baseX = centerX - 18; // Adjusted to fit within safe bounds
     const baseY = centerY - 6;  // Center vertically
     
     const positions = [
       // S shape
-      {x: baseX + 0, y: baseY + 2}, {x: baseX - 2, y: baseY + 4}, {x: baseX + 0, y: baseY + 6}, {x: baseX + 2, y: baseY + 8}, {x: baseX + 0, y: baseY + 10},
+      {x: baseX + 0, y: baseY + 2}, {x: baseX + 0, y: baseY + 4}, {x: baseX + 2, y: baseY + 6}, {x: baseX + 2, y: baseY + 8}, {x: baseX + 0, y: baseY + 10},
       // P shape  
-      {x: baseX + 6, y: baseY + 2}, {x: baseX + 6, y: baseY + 10}, {x: baseX + 8, y: baseY + 2}, {x: baseX + 10, y: baseY + 4}, {x: baseX + 8, y: baseY + 6},
+      {x: baseX + 5, y: baseY + 2}, {x: baseX + 5, y: baseY + 10}, {x: baseX + 7, y: baseY + 2}, {x: baseX + 8, y: baseY + 4}, {x: baseX + 7, y: baseY + 6},
       // I shape
-      {x: baseX + 14, y: baseY + 2}, {x: baseX + 14, y: baseY + 10},
+      {x: baseX + 11, y: baseY + 2}, {x: baseX + 11, y: baseY + 10},
       // N shape
-      {x: baseX + 18, y: baseY + 10}, {x: baseX + 18, y: baseY + 2}, {x: baseX + 22, y: baseY + 10}, {x: baseX + 22, y: baseY + 2},
+      {x: baseX + 14, y: baseY + 10}, {x: baseX + 14, y: baseY + 2}, {x: baseX + 17, y: baseY + 10}, {x: baseX + 17, y: baseY + 2},
       // U shape
-      {x: baseX + 26, y: baseY + 2}, {x: baseX + 26, y: baseY + 8}, {x: baseX + 28, y: baseY + 10}, {x: baseX + 30, y: baseY + 8}, {x: baseX + 30, y: baseY + 2},
+      {x: baseX + 20, y: baseY + 2}, {x: baseX + 20, y: baseY + 8}, {x: baseX + 21, y: baseY + 10}, {x: baseX + 23, y: baseY + 8}, {x: baseX + 23, y: baseY + 2},
       // T shape
-      {x: baseX + 34, y: baseY + 2}, {x: baseX + 38, y: baseY + 2}, {x: baseX + 36, y: baseY + 2}, {x: baseX + 36, y: baseY + 10},
+      {x: baseX + 26, y: baseY + 2}, {x: baseX + 29, y: baseY + 2}, {x: baseX + 27, y: baseY + 2}, {x: baseX + 27, y: baseY + 10},
       // E shape
-      {x: baseX + 42, y: baseY + 2}, {x: baseX + 42, y: baseY + 6}, {x: baseX + 42, y: baseY + 10}, {x: baseX + 44, y: baseY + 2}, {x: baseX + 44, y: baseY + 6}, {x: baseX + 44, y: baseY + 10}
+      {x: baseX + 32, y: baseY + 2}, {x: baseX + 32, y: baseY + 6}, {x: baseX + 32, y: baseY + 10}, {x: baseX + 34, y: baseY + 2}, {x: baseX + 34, y: baseY + 6}, {x: baseX + 34, y: baseY + 10}
     ];
     
     for (let i = 0; i < positions.length; i++) {

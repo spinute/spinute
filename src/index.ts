@@ -274,7 +274,7 @@ ${chalk.dim('💻 🍣 🍺 🌐 🎲 🃏')}
     await sleep(20);
   }
   
-  await sleep(2000);
+  // No pause - exit immediately
 }
 
 // Smooth transition function
@@ -526,8 +526,11 @@ async function main(): Promise<void> {
       seed = parseInt(args[seedIndex + 1], 10);
       if (!isNaN(seed)) {
         random = new SeededRandom(seed);
-        console.log(chalk.dim(`Using seed: ${seed}`));
-        await sleep(1000);
+        // Only show seed message if seed is not 0
+        if (seed !== 0) {
+          console.log(chalk.dim(`Using seed: ${seed}`));
+          await sleep(1000);
+        }
       }
     }
     
@@ -605,7 +608,7 @@ ${chalk.yellow('Examples:')}
     
     // Extended burst sequence (3 seconds) with varied patterns
     const burstStartTime = Date.now();
-    const burstDuration = 3000;
+    const burstDuration = 1500; // Shortened from 3000ms
     const burstChars = ['▓', '░', '▒', '█'];
     const emojis = ['📍', '💻', '🍣', '🍺', '🍅', '😴', '📕', '🦌', '💄', '📌', '🚶‍♀️', '🍕', '🍆', '🌐', '🌵', '🥝', '🛀', '🎲', '🃏'];
     
