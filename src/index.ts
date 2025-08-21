@@ -272,72 +272,91 @@ async function smoothTransition(): Promise<void> {
 
 // Accelerating sequence with exponential speedup
 async function acceleratingSequence(allAnimations: Function[]): Promise<void> {
-  // Create snippets of each animation
-  const animationSnippets = [
-    // Conway snippets
-    async () => {
-      const game = new ConwayGameOfLife(80, 20);
-      game.randomize(0.3);
-      console.clear();
-      console.log(gradient.vice(game.render()));
-    },
-    // Particle snippets
-    async () => {
-      const particles = new ParticleSystem(80, 20, 50);
-      console.clear();
-      console.log(gradient.rainbow(particles.render()));
-    },
-    // Matrix snippets
-    async () => {
-      const matrix = new MatrixRain(80, 20);
-      console.clear();
-      console.log(matrix.render());
-    },
-    // Wave snippets
-    async () => {
-      const wave = new WaveAnimation(80, 20);
-      console.clear();
-      console.log(gradient.cristal(wave.render(Math.random() * 50)));
-    },
-    // Spiral snippets
-    async () => {
-      const spiral = new SpiralPattern(80, 20);
-      console.clear();
-      console.log(gradient.pastel(spiral.render(Math.random() * 30)));
-    },
-    // DNA snippets
-    async () => {
-      const dna = new DNAHelix(80, 20);
-      console.clear();
-      console.log(gradient.vice(dna.render(Math.random() * 30)));
-    },
-    // Glitch snippets
-    async () => {
-      console.clear();
-      const chars = '▓░▒█▀▄■□▪▫╱╲╳✕✖✗⬢⬡◆◇◈⬟⬠';
-      let art = '';
-      for (let y = 0; y < 20; y++) {
-        for (let x = 0; x < 80; x++) {
-          art += gradient.teen(chars[Math.floor(Math.random() * chars.length)]);
-        }
-        art += '\n';
+  // Create animated snippets with motion
+  const createAnimatedSnippet = (
+    setup: () => any,
+    render: (obj: any, frame: number) => string,
+    update?: (obj: any) => void
+  ) => {
+    return async (frameCount: number) => {
+      const obj = setup();
+      for (let i = 0; i < frameCount; i++) {
+        console.clear();
+        console.log(render(obj, i));
+        if (update) update(obj);
+        await sleep(20); // Fixed frame time for smooth motion
       }
-      console.log(art);
-    }
+    };
+  };
+  
+  const animationSnippets = [
+    // Conway with motion
+    createAnimatedSnippet(
+      () => {
+        const game = new ConwayGameOfLife(80, 20);
+        game.randomize(0.4);
+        return game;
+      },
+      (game) => gradient.vice(game.render()),
+      (game) => game.step()
+    ),
+    
+    // Particles with motion
+    createAnimatedSnippet(
+      () => new ParticleSystem(80, 20, 50),
+      (particles) => gradient.rainbow(particles.render()),
+      (particles) => particles.update()
+    ),
+    
+    // Matrix rain with motion
+    createAnimatedSnippet(
+      () => new MatrixRain(80, 20),
+      (matrix) => matrix.render(),
+      (matrix) => matrix.update()
+    ),
+    
+    // Wave with motion
+    createAnimatedSnippet(
+      () => new WaveAnimation(80, 20),
+      (wave, frame) => gradient.cristal(wave.render(frame * 2))
+    ),
+    
+    // Spiral with motion
+    createAnimatedSnippet(
+      () => new SpiralPattern(80, 20),
+      (spiral, frame) => gradient.pastel(spiral.render(frame * 3))
+    ),
+    
+    // DNA with motion
+    createAnimatedSnippet(
+      () => new DNAHelix(80, 20),
+      (dna, frame) => gradient.vice(dna.render(frame * 2))
+    ),
+    
+    // Fireflies with motion
+    createAnimatedSnippet(
+      () => new Fireflies(80, 20),
+      (fireflies, frame) => fireflies.render(frame)
+    ),
+    
+    // Kaleidoscope with motion
+    createAnimatedSnippet(
+      () => new Kaleidoscope(80, 20),
+      (k, frame) => gradient.rainbow(k.render(frame * 2))
+    )
   ];
   
-  // Start with 500ms per animation and exponentially decrease
-  let duration = 500;
-  const minDuration = 10;
-  const acceleration = 0.82; // Each animation is 18% faster
+  // Start with longer animations and exponentially decrease
+  let frameCount = 15; // Start with 15 frames
+  const minFrames = 2;
+  const acceleration = 0.85;
   
   // Run animations with increasing speed
   let iterations = 0;
-  while (duration > minDuration && iterations < 25) {
+  while (frameCount > minFrames && iterations < 20) {
     const randomSnippet = animationSnippets[Math.floor(Math.random() * animationSnippets.length)];
-    await randomSnippet();
-    await sleep(duration);
-    duration *= acceleration;
+    await randomSnippet(Math.floor(frameCount));
+    frameCount *= acceleration;
     iterations++;
   }
   
