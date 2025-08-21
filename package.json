@@ -1,0 +1,64 @@
+{
+  "name": "spinute",
+  "version": "1.0.0",
+  "description": "📍 A creative CLI self-introduction with beautiful animations and visual effects",
+  "main": "dist/index.js",
+  "bin": {
+    "spinute": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "cli",
+    "introduction",
+    "profile",
+    "animation",
+    "ascii-art",
+    "creative-coding",
+    "generative-art",
+    "terminal",
+    "spinute",
+    "npx"
+  ],
+  "author": "spinute (https://spinute.notion.site/)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spinute/spinute.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spinute/spinute/issues"
+  },
+  "homepage": "https://github.com/spinute/spinute#readme",
+  "dependencies": {
+    "boxen": "^5.1.2",
+    "chalk": "^4.1.2",
+    "figlet": "^1.6.0",
+    "gradient-string": "^2.0.2",
+    "inquirer": "^8.2.6",
+    "open": "^8.4.2",
+    "ora": "^5.4.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "preferGlobal": true,
+  "devDependencies": {
+    "@types/boxen": "^2.1.0",
+    "@types/figlet": "^1.7.0",
+    "@types/gradient-string": "^1.1.6",
+    "@types/inquirer": "^9.0.9",
+    "@types/node": "^24.3.0",
+    "@types/open": "^6.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
