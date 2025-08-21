@@ -382,6 +382,107 @@ async function blackScreen(): Promise<void> {
   await sleep(800); // Dramatic pause
 }
 
+// Pin loading screen
+async function pinLoadingScreen(): Promise<void> {
+  console.clear();
+  const width = 80;
+  const height = 20;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  
+  // Create different loading patterns with 📍
+  const loadingPatterns = [
+    // Rotating circle
+    async () => {
+      for (let frame = 0; frame < 30; frame++) {
+        console.clear();
+        const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
+        
+        // Draw rotating pins
+        const radius = 8;
+        const pinCount = 8;
+        for (let i = 0; i < pinCount; i++) {
+          const angle = (i / pinCount) * Math.PI * 2 + frame * 0.1;
+          const x = Math.floor(centerX + Math.cos(angle) * radius);
+          const y = Math.floor(centerY + Math.sin(angle) * radius * 0.5);
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            grid[y][x] = '📍';
+          }
+        }
+        
+        // Center pin
+        grid[Math.floor(centerY)][Math.floor(centerX)] = '📍';
+        
+        console.log(grid.map(row => row.join('')).join('\n'));
+        await sleep(50);
+      }
+    },
+    // Pulsing pins
+    async () => {
+      for (let frame = 0; frame < 20; frame++) {
+        console.clear();
+        const grid: string[][] = Array(height).fill(null).map(() => Array(width).fill(' '));
+        
+        const pulse = Math.sin(frame * 0.3) * 0.5 + 0.5;
+        const size = Math.floor(pulse * 5) + 1;
+        
+        for (let dy = -size; dy <= size; dy++) {
+          for (let dx = -size; dx <= size; dx++) {
+            if (Math.abs(dx) + Math.abs(dy) <= size) {
+              const x = Math.floor(centerX + dx * 3);
+              const y = Math.floor(centerY + dy);
+              if (x >= 0 && x < width && y >= 0 && y < height) {
+                grid[y][x] = '📍';
+              }
+            }
+          }
+        }
+        
+        console.log(gradient.pastel(grid.map(row => row.join('')).join('\n')));
+        await sleep(60);
+      }
+    }
+  ];
+  
+  const pattern = loadingPatterns[Math.floor(Math.random() * loadingPatterns.length)];
+  await pattern();
+}
+
+// Show animation for specific duration
+async function showTimedAnimation(animationFunc: Function, durationMs: number): Promise<void> {
+  const startTime = Date.now();
+  
+  // Create a promise that resolves after the duration
+  const timeoutPromise = new Promise<void>(resolve => {
+    setTimeout(resolve, durationMs);
+  });
+  
+  // Run the animation until timeout
+  const animationPromise = (async () => {
+    while (Date.now() - startTime < durationMs) {
+      await animationFunc();
+    }
+  })();
+  
+  // Wait for timeout
+  await Promise.race([animationPromise, timeoutPromise]);
+}
+
+// Show card for specific duration
+async function showTimedCard(cardFunc: Function, durationMs: number): Promise<void> {
+  const startTime = Date.now();
+  let frameCount = 0;
+  
+  while (Date.now() - startTime < durationMs) {
+    await cardFunc();
+    frameCount++;
+    // Cards update less frequently
+    if (Date.now() - startTime < durationMs - 50) {
+      await sleep(50);
+    }
+  }
+}
+
 async function main(): Promise<void> {
   try {
     const visualEffects = [
@@ -409,24 +510,231 @@ async function main(): Promise<void> {
     const shuffledEffects = [...visualEffects].sort(() => Math.random() - 0.5);
     const shuffledCards = [...animatedCards].sort(() => Math.random() - 0.5);
     
-    // 3 cycles of alternating display
-    for (let cycle = 0; cycle < 3; cycle++) {
-      // Show visual effect
-      await shuffledEffects[cycle % shuffledEffects.length]();
-      await smoothTransition();
-      
-      // Show animated card
-      if (cycle < 2) {
-        await shuffledCards[cycle % shuffledCards.length]();
-        await smoothTransition();
-      }
-    }
+    // 2s, 1s, 2s, 1s, 2s pattern
+    // Animation 1 - 2 seconds
+    await showTimedAnimation(shuffledEffects[0], 2000);
+    
+    // Card 1 - 1 second
+    await showTimedCard(shuffledCards[0], 1000);
+    
+    // Animation 2 - 2 seconds
+    await showTimedAnimation(shuffledEffects[1], 2000);
+    
+    // Card 2 - 1 second
+    await showTimedCard(shuffledCards[1], 1000);
+    
+    // Animation 3 - 2 seconds
+    await showTimedAnimation(shuffledEffects[2], 2000);
     
     // Exponential acceleration sequence
     await acceleratingSequence([...shuffledEffects, ...animatedCards]);
     
-    // Black screen pause
-    await blackScreen();
+    // Extended burst sequence (3 seconds) with varied patterns
+    const burstStartTime = Date.now();
+    const burstDuration = 3000;
+    const burstChars = ['▓', '░', '▒', '█', '📍', '💻', '🍣', '🍺', '🌐', '🎲', '🃏', '🌵', '🦌', '💄'];
+    const emojis = ['📍', '💻', '🍣', '🍺', '🍅', '😴', '📕', '🦌', '💄', '📌', '🚶‍♀️', '🍕', '🍆', '🌐', '🌵', '🥝', '🛀', '🎲', '🃏'];
+    
+    let frameCount = 0;
+    while (Date.now() - burstStartTime < burstDuration) {
+      console.clear();
+      const elapsed = Date.now() - burstStartTime;
+      const progress = elapsed / burstDuration;
+      
+      // Different burst patterns based on time
+      if (elapsed < 300) {
+        // Pattern 1: Expanding circles
+        let output = '';
+        const centerX = 40;
+        const centerY = 10;
+        const radius = (frameCount * 2) % 20;
+        
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+            if (Math.abs(dist - radius) < 2) {
+              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else if (Math.random() < 0.05) {
+              output += burstChars[Math.floor(Math.random() * 4)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(gradient.rainbow(output));
+        
+      } else if (elapsed < 600) {
+        // Pattern 2: Wave sweep
+        let output = '';
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            const wave = Math.sin((x + frameCount * 3) * 0.2) * 5 + 10;
+            if (Math.abs(y - wave) < 2) {
+              output += '📍';
+            } else if (Math.random() < 0.1) {
+              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(gradient.vice(output));
+        
+      } else if (elapsed < 900) {
+        // Pattern 3: Matrix rain burst
+        let output = '';
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            if ((x + frameCount) % 5 === 0 && Math.random() < 0.8) {
+              output += chalk.green(burstChars[Math.floor(Math.random() * burstChars.length)]);
+            } else if (Math.random() < 0.1) {
+              output += chalk.dim(emojis[Math.floor(Math.random() * emojis.length)]);
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(output);
+        
+      } else if (elapsed < 1200) {
+        // Pattern 4: Spiral burst
+        let output = '';
+        const angle = frameCount * 0.2;
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            const cx = x - 40;
+            const cy = y - 10;
+            const r = Math.sqrt(cx * cx + cy * cy);
+            const a = Math.atan2(cy, cx);
+            if (Math.abs((a + angle) % (Math.PI / 3) - r * 0.1) < 0.3) {
+              output += '📍';
+            } else if (Math.random() < 0.05) {
+              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(gradient.pastel(output));
+        
+      } else if (elapsed < 1500) {
+        // Pattern 5: Diamond cascade
+        let output = '';
+        const offset = frameCount % 20;
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            const diamond = Math.abs(x - 40) + Math.abs(y - offset);
+            if (diamond < 10 && diamond > 7) {
+              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else if (Math.random() < 0.1) {
+              output += burstChars[Math.floor(Math.random() * 4)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(gradient.teen(output));
+        
+      } else if (elapsed < 1800) {
+        // Pattern 6: Checkerboard fade
+        let output = '';
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            if (((x + y + frameCount) % 4 === 0) && Math.random() < 0.8) {
+              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else if (Math.random() < 0.2) {
+              output += burstChars[Math.floor(Math.random() * burstChars.length)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(gradient.cristal(output));
+        
+      } else if (elapsed < 2100) {
+        // Pattern 7: Particle explosion
+        let output = '';
+        const particles = 20;
+        const grid: string[][] = Array(20).fill(null).map(() => Array(80).fill(' '));
+        
+        for (let i = 0; i < particles; i++) {
+          const angle = (i / particles) * Math.PI * 2;
+          const speed = (frameCount % 30) * 0.5;
+          const x = Math.floor(40 + Math.cos(angle) * speed);
+          const y = Math.floor(10 + Math.sin(angle) * speed * 0.5);
+          
+          if (x >= 0 && x < 80 && y >= 0 && y < 20) {
+            grid[y][x] = emojis[i % emojis.length];
+          }
+        }
+        
+        // Add some random background
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            if (grid[y][x] === ' ' && Math.random() < 0.05) {
+              grid[y][x] = chalk.dim(burstChars[Math.floor(Math.random() * 4)]);
+            }
+          }
+        }
+        
+        output = grid.map(row => row.join('')).join('\n');
+        console.log(gradient.atlas(output));
+        
+      } else if (elapsed < 2400) {
+        // Pattern 8: Zigzag lightning
+        let output = '';
+        const zigzag = frameCount % 40;
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            const lightning = (y % 4 === 0) ? zigzag + (y * 2) : 80 - zigzag - (y * 2);
+            if (Math.abs(x - lightning) < 2) {
+              output += '⚡';
+            } else if (Math.abs(x - lightning) < 5 && Math.random() < 0.3) {
+              output += emojis[Math.floor(Math.random() * emojis.length)];
+            } else if (Math.random() < 0.02) {
+              output += burstChars[Math.floor(Math.random() * burstChars.length)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        console.log(gradient.rainbow(output));
+        
+      } else {
+        // Pattern 9: Final chaos burst
+        let output = '';
+        const density = 0.3 + (progress * 0.5);
+        for (let y = 0; y < 20; y++) {
+          for (let x = 0; x < 80; x++) {
+            if (Math.random() < density) {
+              const charSet = Math.random() < 0.6 ? emojis : burstChars;
+              output += charSet[Math.floor(Math.random() * charSet.length)];
+            } else {
+              output += ' ';
+            }
+          }
+          output += '\n';
+        }
+        
+        // Rapid gradient changes for final burst
+        const gradients = [gradient.rainbow, gradient.vice, gradient.pastel, gradient.cristal, gradient.teen];
+        const gradientFunc = gradients[Math.floor(frameCount / 2) % gradients.length];
+        console.log(gradientFunc(output));
+      }
+      
+      frameCount++;
+      await sleep(30);
+    }
+    
+    // Pin loading screen
+    await pinLoadingScreen();
     
     // Final static business card
     await showStaticBusinessCard();
